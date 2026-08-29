@@ -1,0 +1,77 @@
+VICTIM_BEFORE_READ skb=0xfffffe860328f200 users=1 flags=3 cpu0
+#0  unix_stream_read_actor (skb=<optimized out>, skip=<optimized out>, chunk=<optimized out>, state=<optimized out>) at net/unix/af_unix.c:2908
+#1  0xffffffff81f6620e in unix_stream_recv_urg (state=0xffffc90000d03d18) at net/unix/af_unix.c:2638
+#2  0xffffffff81f66055 in unix_stream_read_generic (state=<optimized out>, freezable=false) at net/unix/af_unix.c:2717
+#3  0xffffffff81f68595 in unix_stream_recvmsg (sock=<optimized out>, msg=<optimized out>, size=1, flags=13647128) at net/unix/af_unix.c:2948
+#4  0xffffffff81cc3f11 in sock_recvmsg_nosec (sock=0xfffffe86039b1a00, msg=0xffffc90000d03d70, flags=3) at net/socket.c:995
+#5  sock_recvmsg (sock=0xfffffe86039b1a00, msg=0xffffc90000d03d70, flags=3) at net/socket.c:1013
+#6  __sys_recvfrom (fd=<optimized out>, ubuf=<optimized out>, size=<optimized out>, flags=3, addr=0x0 <fixed_percpu_data>, addr_len=0x0 <fixed_percpu_data>) at net/socket.c:2169
+#7  0xffffffff81cc3f42 in __do_sys_recvfrom (fd=-2147483648, ubuf=0x0 <fixed_percpu_data>, size=1, flags=13647128, addr=0xffffffff836ad790 <unix_stream_proto>, addr_len=0x0 <fixed_percpu_data>) at net/socket.c:2187
+(More stack frames follow...)
+0xffffffff81f657c0 <unix_stream_read_actor>:	0xeb	0xfe	0x44	0x00
+Breakpoint 2 at 0xffffffff81cd08b0: __kfree_skb. (2 locations)
+Continuing.
+[Switching to Thread 1.2]
+
+Thread 2 hit Breakpoint 2, __kfree_skb (skb=<optimized out>) at net/core/skbuff.c:867
+867	{
+FREE_BEGIN skb=0xfffffe860328f200 users=1
+return_after_free=0xffffffff81f69df1
+#0  __kfree_skb (skb=<optimized out>) at net/core/skbuff.c:867
+#1  0xffffffff81cd1186 in consume_skb (skb=0xfffffe860328f200) at net/core/skbuff.c:1033
+#2  0xffffffff81f69df1 in queue_oob (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0, other=0xfffffe8602f0ee80) at net/unix/af_unix.c:2132
+#3  0xffffffff81f684e2 in unix_stream_sendmsg (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0, len=0) at net/unix/af_unix.c:2238
+#4  0xffffffff81cc3b75 in sock_sendmsg_nosec (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0) at net/socket.c:714
+#5  sock_sendmsg (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0) at net/socket.c:734
+#6  __sys_sendto (fd=<optimized out>, buff=<optimized out>, len=<optimized out>, flags=<optimized out>, addr=<optimized out>, addr_len=0) at net/socket.c:2117
+#7  0xffffffff81cc3ba2 in __do_sys_sendto (fd=1, buff=0x1 <fixed_percpu_data+1>, len=1, flags=3, addr=0x0 <fixed_percpu_data>, addr_len=512) at net/socket.c:2129
+#8  __se_sys_sendto (buff=1, len=1, addr=0, fd=<optimized out>, flags=<optimized out>, addr_len=<optimized out>) at net/socket.c:2125
+#9  __x64_sys_sendto (regs=<optimized out>) at net/socket.c:2125
+#10 0xffffffff820a6079 in do_syscall_x64 (regs=0xffffc90000cebf58, nr=1) at arch/x86/entry/common.c:50
+#11 do_syscall_64 (regs=0xffffc90000cebf58, nr=1) at arch/x86/entry/common.c:80
+(More stack frames follow...)
+  Id   Target Id                    Frame 
+  1    Thread 1.1 (CPU#0 [running]) unix_stream_read_actor (skb=<optimized out>, skip=<optimized out>, chunk=<optimized out>, state=<optimized out>) at net/unix/af_unix.c:2908
+* 2    Thread 1.2 (CPU#1 [running]) __kfree_skb (skb=<optimized out>) at net/core/skbuff.c:867
+  3    Thread 1.3 (CPU#2 [halted ]) native_safe_halt () at ./arch/x86/include/asm/irqflags.h:52
+  4    Thread 1.4 (CPU#3 [halted ]) native_safe_halt () at ./arch/x86/include/asm/irqflags.h:52
+Breakpoint 3 at 0xffffffff81f69df1: file net/unix/af_unix.c, line 2134.
+Continuing.
+
+Thread 2 hit Breakpoint 3, queue_oob (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0, other=0xfffffe8602f0ee80) at net/unix/af_unix.c:2134
+2134		WRITE_ONCE(ousk->oob_skb, skb);
+FREE_COMPLETED skb=0xfffffe860328f200 now_users=1
+0xfffffe860328f200:	0x0000000000000000	0x0000000000000000
+0xfffffe860328f210:	0x0000000000000000	0xfffffe8602f0a200
+0xfffffe860328f220:	0x0000000000000000	0x0000000000000000
+0xfffffe860328f230:	0x0000000000000000	0x0000000000000000
+0xfffffe860328f240:	0x0000000000000000	0x0000000000000000
+0xfffffe860328f250:	0x0000000000000000	0x0000000000000000
+0xfffffe860328f260:	0xffffffff81ccc870	0x0000000000000000
+0xfffffe860328f270:	0xd71a089776b368a9	0x0000000000000000
+  Id   Target Id                    Frame 
+  1    Thread 1.1 (CPU#0 [running]) static_key_false (key=<optimized out>) at ./include/linux/jump_label.h:269
+* 2    Thread 1.2 (CPU#1 [running]) queue_oob (sock=0xfffffe86039b0000, msg=0xffffc90000cebdf0, other=0xfffffe8602f0ee80) at net/unix/af_unix.c:2134
+  3    Thread 1.3 (CPU#2 [running]) static_key_false (key=<optimized out>) at ./include/linux/jump_label.h:269
+  4    Thread 1.4 (CPU#3 [halted ]) native_safe_halt () at ./arch/x86/include/asm/irqflags.h:52
+Breakpoint 4 at 0xffffffff81f657c8: file net/unix/af_unix.c, line 2911.
+0xffffffff81f657c0 <unix_stream_read_actor>:	0x0f	0x1f	0x44	0x00	0x00	0x53	0x89	0xd3
+Continuing.
+[Switching to Thread 1.1]
+
+Thread 1 hit Breakpoint 4, unix_stream_read_actor (skb=0xfffffe860328f200, skip=0, chunk=1, state=0xffffc90000d03d18) at net/unix/af_unix.c:2911
+2911		ret = skb_copy_datagram_msg(skb, UNIXCB(skb).consumed + skip,
+STALE_DEREFERENCE skb=0xfffffe860328f200 at unix_stream_read_actor+8 after kmem_cache_free completed
+freed UNIXCB.consumed about_to_read=0
+$9 = 0xfffffe860328fc00
+#0  unix_stream_read_actor (skb=0xfffffe860328f200, skip=0, chunk=1, state=0xffffc90000d03d18) at net/unix/af_unix.c:2911
+#1  0xffffffff81f6620e in unix_stream_recv_urg (state=0xffffc90000d03d18) at net/unix/af_unix.c:2638
+#2  0xffffffff81f66055 in unix_stream_read_generic (state=<optimized out>, freezable=false) at net/unix/af_unix.c:2717
+#3  0xffffffff81f68595 in unix_stream_recvmsg (sock=<optimized out>, msg=<optimized out>, size=1, flags=13647128) at net/unix/af_unix.c:2948
+#4  0xffffffff81cc3f11 in sock_recvmsg_nosec (sock=0xfffffe86039b1a00, msg=0xffffc90000d03d70, flags=3) at net/socket.c:995
+#5  sock_recvmsg (sock=0xfffffe86039b1a00, msg=0xffffc90000d03d70, flags=3) at net/socket.c:1013
+#6  __sys_recvfrom (fd=<optimized out>, ubuf=<optimized out>, size=<optimized out>, flags=3, addr=0x0 <fixed_percpu_data>, addr_len=0x0 <fixed_percpu_data>) at net/socket.c:2169
+#7  0xffffffff81cc3f42 in __do_sys_recvfrom (fd=-2147483648, ubuf=0x0 <fixed_percpu_data>, size=1, flags=13647128, addr=0xffffffff836ad790 <unix_stream_proto>, addr_len=0x0 <fixed_percpu_data>) at net/socket.c:2187
+#8  __se_sys_recvfrom (ubuf=0, size=1, addr=-2090150000, addr_len=0, fd=<optimized out>, flags=<optimized out>) at net/socket.c:2183
+#9  __x64_sys_recvfrom (regs=<optimized out>) at net/socket.c:2183
+(More stack frames follow...)

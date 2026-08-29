@@ -1,0 +1,5 @@
+uid=1000(user) gid=1000(user) groups=1000(user),1001(tracing)
+CapEff:	0000000000000000
+initial OOB send returned 1 errno=0
+replacement OOB send returned 1 errno=0
+OOB peek returned -1 byte=00 errno=14
