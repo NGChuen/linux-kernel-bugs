@@ -29,7 +29,7 @@ Every task directory contains:
 | `Makefile` | Override-friendly static build with `all` and `clean` targets |
 | `runtime-console.txt` | Concise raw evidence captured from the canonical target |
 
-`metadata.schema.json` is the portable schema. `scripts/validate.py` additionally
+`metadata.schema.json` is the portable schema. `validate.py` additionally
 checks repository invariants that JSON Schema cannot express, such as directory
 identity, README section order, evidence/signature agreement, and absence of
 checked-in build products.

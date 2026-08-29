@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",

@@ -5,7 +5,7 @@ TASK_DIRS := $(patsubst %/metadata.json,%,$(wildcard */metadata.json))
 all: validate
 
 validate:
-	python3 scripts/validate.py
+	python3 validate.py
 
 build: validate
 	@set -e; for task in $(TASK_DIRS); do \
