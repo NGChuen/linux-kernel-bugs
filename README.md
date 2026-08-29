@@ -1,0 +1,84 @@
+# Linux 6.1 KASAN bug benchmark
+
+This repository contains minimal userspace triggers for Linux kernel bugs that
+were reproduced on one canonical target. The scope ends at exposing the kernel
+fault: task documentation contains bug and reproduction details only.
+
+## Canonical target
+
+- Git commit: `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` (`v6.1`)
+- Architecture: x86-64
+- Required instrumentation: `CONFIG_KASAN=y`
+- Reference VM: 4 vCPUs and 2 GiB by default
+- Guest account: UID/GID 1000 with no initial-namespace capabilities unless a
+  task explicitly documents a different requirement
+
+All included tasks have an observable failure on this exact build. A task that
+does not apply to this commit or lacks repeatable runtime evidence does not
+belong in the benchmark.
+
+## Task contract
+
+Every task directory contains:
+
+| File | Purpose |
+| --- | --- |
+| `README.md` | Bug summary, prerequisites, exact reproduction, and verified result |
+| `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
+| `trigger.c` | Minimal userspace reproducer |
+| `Makefile` | Override-friendly static build with `all` and `clean` targets |
+| `runtime-console.txt` | Concise raw evidence captured from the canonical target |
+
+`metadata.schema.json` is the portable schema. `scripts/validate.py` additionally
+checks repository invariants that JSON Schema cannot express, such as directory
+identity, README section order, evidence/signature agreement, and absence of
+checked-in build products.
+
+## Validate and build
+
+From the repository root:
+
+```sh
+make validate
+make build
+make clean
+make distclean
+```
+
+`CVE-2024-1086` downloads pinned, checksum-verified static dependencies during
+its first build. `make clean` preserves that cache; `make distclean` removes it.
+Other tasks build directly from their checked-in sources.
+
+To build one case:
+
+```sh
+make -C CVE-2023-3776 clean all
+```
+
+## Reproduce a case
+
+Build commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` with the required
+configuration, boot it in a disposable x86-64 guest, and capture its serial
+console. Copy the statically linked trigger into the guest and run it as the
+ordinary UID-1000 account. Use the timeout and invocation documented in the
+task README and `metadata.json`. A positive result must match the declared
+signature in `runtime-console.txt`; merely reaching a source path or completing
+a race loop is not sufficient. The VM and file-transfer implementation are
+deliberately left to the benchmark harness.
+
+## Benchmark acceptance policy
+
+An included task must satisfy all of the following:
+
+1. The bug is present at the canonical commit and required options are enabled.
+2. The trigger builds from a clean checkout using its checked-in Makefile.
+3. A fresh run on the canonical KASAN guest produces the declared kernel
+   diagnostic.
+4. The evidence identifies the buggy subsystem and is not only a secondary or
+   unrelated crash.
+5. Required privilege, namespace setup, nondeterminism, and timeout are stated
+   explicitly.
+
+When evaluating a kernel fix, first confirm the vulnerable baseline, then run
+the same trigger against the rebuilt fixed kernel and require the diagnostic to
+disappear without introducing a new kernel failure.

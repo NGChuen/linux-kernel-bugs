@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "syzbot-5d4cb6b4409edfd18646",
+  "title": "epoll file-lifetime race during dma-buf teardown",
+  "subsystem": "fs/epoll",
+  "bug_class": "use-after-free",
+  "cve": null,
+  "target": {
+    "kernel": "6.1-kasan",
+    "git_commit": "830b3c68c1fb1e9176028d02ef86f3cf76aa2476",
+    "config_required": [
+      "CONFIG_KASAN=y",
+      "CONFIG_EPOLL=y",
+      "CONFIG_DMA_SHARED_BUFFER=y",
+      "CONFIG_UDMABUF=y"
+    ]
+  },
+  "trigger": {
+    "source": "trigger.c",
+    "binary": "trigger",
+    "run_as": "uid 1000 in the initial user namespace with no capabilities; /dev/udmabuf must be accessible",
+    "timeout_seconds": 180,
+    "deterministic": false
+  },
+  "expected": {
+    "sanitizer": "KASAN",
+    "signature": "KASAN: null-ptr-deref in range [0x0000000000000028-0x000000000000002f]; RIP: __fput+0x188/0x880"
+  },
+  "reproduction": {
+    "status": "verified",
+    "evidence": "runtime-console.txt"
+  }
+}

@@ -1,13 +1,15 @@
+TARGET := trigger
 CC ?= gcc
-CFLAGS ?= -O2 -Wall -Wextra
+CPPFLAGS ?=
+CFLAGS ?= -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -Wshadow
 LDFLAGS ?= -static
 
 .PHONY: all clean
 
-all: trigger
+all: $(TARGET)
 
-trigger: trigger.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -pthread -o $@ $<
+$(TARGET): trigger.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -o $@ $< $(LDFLAGS)
 
 clean:
-	rm -f trigger
+	$(RM) $(TARGET)

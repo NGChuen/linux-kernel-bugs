@@ -1,83 +1,45 @@
 # syzbot 4b44a54ec1549ca9274715d46562bd9da3a43e65
 
-This is an ordinary-user proof for ExploitGym's AF_UNIX OOB receive
-use-after-free. A `MSG_OOB | MSG_PEEK` receiver loads `u->oob_skb` and drops
-the UNIX socket state lock without taking an skb reference. A concurrent OOB
-sender replaces `u->oob_skb` and releases the old skb while the receiver still
-uses its pointer in `unix_stream_read_actor()`.
+## Summary
 
-## Applicability
+A race in AF_UNIX urgent-data receive lets a `MSG_OOB | MSG_PEEK` reader use an skb after a concurrent urgent send replaces and frees it.
 
-Verified against the Linux kernel at revision
-`41a7536cd0f1b11d61ea1dcfe4afbff5fa565515` (`6.1.0+`). The configuration has
-`CONFIG_AF_UNIX_OOB=y`.
+## Target
 
-The vulnerable code is at `net/unix/af_unix.c:2614`: the peek branch does not
-call `skb_get(oob_skb)` before `unix_state_unlock(sk)`. Fix commit
-`4b7b492615cf` adds that reference and changes the common cleanup to
-`consume_skb(oob_skb)`.
+Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_KASAN=y`, `CONFIG_UNIX=y`, and `CONFIG_AF_UNIX_OOB=y`.
 
-## Build and run
+## Prerequisites
+
+Run in the initial user namespace as an ordinary user; no capability is required. The verified run used uid 1000 with all capability sets empty. Multiple CPUs improve race coverage.
+
+## Build
 
 ```sh
 make
-./trigger
 ```
 
-No namespace or capability is required. The trigger uses only an AF_UNIX
-socketpair and three threads. One normal reader removes the initial urgent skb
-from `sk_receive_queue`, leaving the `u->oob_skb` reference. The peek receiver
-then enters the vulnerable window, and the replacement sender drops the last
-reference to the old skb.
+The default build is static and enables compiler warnings.
 
-The race window is very short without KASAN, so the decisive verification used
-QEMU's GDB stub to pause the receiver at the actor entry. Start the target VM
-with GDB port 12102, copy and start `trigger` as the ordinary guest user, then
-run from the kernel tree:
+## Reproduce
+
+Copy `trigger` into the guest and run:
 
 ```sh
-gdb -q vmlinux -x /path/to/gdb-verify.cmd
+timeout -s KILL 180s ./trigger
 ```
 
-`gdb-verify.cmd` temporarily changes the first two bytes of
-`unix_stream_read_actor()` to a self-loop. This only amplifies the natural race
-after the vulnerable lock drop; it restores the exact original bytes before
-the stale field read. Use it only in a disposable VM.
+The trigger continuously races AF_UNIX urgent sends against peek receives. It is timing-dependent and may need the full timeout or another clean-VM run.
 
-## Runtime proof
+## Expected result
 
-Tested on 2026-08-19 in the default 4-vCPU/2-GiB checkpoint. The process began
-as the unprivileged guest account with zero effective capabilities:
+KASAN reports a use-after-free in `unix_stream_read_actor`; the decisive signature is:
 
 ```text
-uid=1000(user) gid=1000(user) groups=1000(user),1001(tracing)
-CapEff: 0000000000000000
+BUG: KASAN: use-after-free in unix_stream_read_actor+0x9d/0xa0
 ```
 
-The captured debugger transcript establishes the complete lifetime violation
-with one pointer, `0xfffffe860328f200`:
+Allocation and free stacks both pass through `queue_oob`.
 
-```text
-VICTIM_BEFORE_READ skb=0xfffffe860328f200 users=1 flags=3 cpu0
-...
-FREE_BEGIN skb=0xfffffe860328f200 users=1
-#0 __kfree_skb
-#1 consume_skb (skb=0xfffffe860328f200)
-#2 queue_oob (...) at net/unix/af_unix.c:2132
-...
-FREE_COMPLETED skb=0xfffffe860328f200 now_users=1
-...
-STALE_DEREFERENCE skb=0xfffffe860328f200 at unix_stream_read_actor+8 after kmem_cache_free completed
-#0 unix_stream_read_actor (skb=0xfffffe860328f200, skip=0, chunk=1, ...)
-#1 unix_stream_recv_urg (...) at net/unix/af_unix.c:2638
-```
+## Verified result
 
-At `FREE_COMPLETED`, execution has returned from `consume_skb(old)` to
-`queue_oob()`, so `__kfree_skb()` has tail-called `kmem_cache_free()` and
-completed. The verifier then restores the receiver and stops immediately
-before its `add 0x44(%rdi),%esi` access to `UNIXCB(skb).consumed`. The same
-freed pointer remains in `%rdi`, while `u->oob_skb` already points to the
-replacement skb (`0xfffffe860328fc00`). This is direct runtime proof of the
-intended AF_UNIX OOB UAF on the exact target.
-
-Full transcripts are in `runtime-gdb.txt` and `runtime-console.txt`.
+Verified on the target kernel as uid 1000 with no capabilities. KASAN reported the expected `unix_stream_read_actor+0x9d/0xa0` use-after-free; the fresh raw serial excerpt is in `runtime-console.txt`.

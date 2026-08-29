@@ -1,5 +1,94 @@
-uid=1000(user) gid=1000(user) groups=1000(user),1001(tracing)
-CapEff:	0000000000000000
-initial OOB send returned 1 errno=0
-replacement OOB send returned 1 errno=0
-OOB peek returned -1 byte=00 errno=14
+[   97.255826][T11510] ==================================================================
+[   97.256899][T11510] BUG: KASAN: use-after-free in unix_stream_read_actor+0x9d/0xa0
+[   97.257766][T11510] Read of size 4 at addr ffff888026664a44 by task trigger/11510
+[   97.258589][T11510]
+[   97.258844][T11510] CPU: 1 PID: 11510 Comm: trigger Not tainted 6.1.0 #1
+[   97.259587][T11510] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
+[   97.260579][T11510] Call Trace:
+[   97.260937][T11510]  <TASK>
+[   97.261248][T11510]  dump_stack_lvl+0x1e3/0x2cb
+[   97.261769][T11510]  ? nf_tcp_handle_invalid+0x627/0x627
+[   97.262363][T11510]  ? __wake_up_klogd+0xcc/0x100
+[   97.262894][T11510]  ? panic+0x76b/0x76b
+[   97.263347][T11510]  ? _printk+0xd1/0x111
+[   97.263789][T11510]  print_address_description+0x74/0x310
+[   97.264382][T11510]  print_report+0xfd/0x210
+[   97.264875][T11510]  ? preempt_schedule+0xd9/0xe0
+[   97.265406][T11510]  ? __virt_addr_valid+0x21b/0x2d0
+[   97.265954][T11510]  ? __phys_addr+0xb5/0x160
+[   97.266440][T11510]  ? unix_stream_read_actor+0x9d/0xa0
+[   97.267011][T11510]  kasan_report+0x137/0x170
+[   97.267490][T11510]  ? unix_stream_read_actor+0x9d/0xa0
+[   97.268054][T11510]  unix_stream_read_actor+0x9d/0xa0
+[   97.268632][T11510]  unix_stream_recv_urg+0x1ba/0x300
+[   97.269369][T11510]  unix_stream_read_generic+0x2170/0x2250
+[   97.269981][T11510]  ? reacquire_held_locks+0x660/0x660
+[   97.270548][T11510]  ? aa_label_sk_perm+0x4f3/0x6e0
+[   97.271082][T11510]  ? reacquire_held_locks+0x660/0x660
+[   97.271657][T11510]  ? aa_sk_perm+0x990/0x990
+[   97.272130][T11510]  ? __lock_acquire+0x126a/0x1f80
+[   97.272669][T11510]  ? unix_stream_read_actor+0xa0/0xa0
+[   97.273269][T11510]  ? __might_sleep+0xb0/0xb0
+[   97.273765][T11510]  ? __might_fault+0xb6/0x110
+[   97.274257][T11510]  ? rcu_read_lock_sched_held+0x89/0x130
+[   97.274849][T11510]  ? __bpf_trace_rcu_stall_warning+0x10/0x10
+[   97.275477][T11510]  unix_stream_recvmsg+0x220/0x2b0
+[   97.276025][T11510]  ? unix_stream_sendmsg+0x10a0/0x10a0
+[   97.276612][T11510]  ? __unix_stream_recvmsg+0x210/0x210
+[   97.277186][T11510]  ? aa_sock_msg_perm+0x91/0x150
+[   97.277704][T11510]  ? bpf_lsm_socket_recvmsg+0x5/0x10
+[   97.278258][T11510]  ? security_socket_recvmsg+0xa4/0xc0
+[   97.278828][T11510]  ? unix_stream_sendmsg+0x10a0/0x10a0
+[   97.279401][T11510]  ____sys_recvmsg+0x282/0x520
+[   97.279915][T11510]  ? __sys_recvmsg_sock+0x40/0x40
+[   97.280459][T11510]  ? __fdget+0x180/0x210
+[   97.280904][T11510]  __sys_recvmsg+0x2d7/0x3c0
+[   97.281394][T11510]  ? ____sys_recvmsg+0x520/0x520
+[   97.281928][T11510]  ? __set_current_blocked+0x2a6/0x2f0
+[   97.282506][T11510]  ? lockdep_hardirqs_on_prepare+0x438/0x7a0
+[   97.283132][T11510]  ? syscall_enter_from_user_mode+0x2e/0x1d0
+[   97.283759][T11510]  ? lockdep_hardirqs_on+0x95/0x140
+[   97.284309][T11510]  ? syscall_enter_from_user_mode+0x2e/0x1d0
+[   97.284948][T11510]  do_syscall_64+0x3d/0x90
+[   97.285418][T11510]  entry_SYSCALL_64_after_hwframe+0x63/0xcd
+[   97.286040][T11510] RIP: 0033:0x44d4ed
+[   97.286446][T11510] Code: c3 e8 37 20 00 00 0f 1f 80 00 00 00 00 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b0 ff ff ff f7 d8 64 89 01 48
+[   97.288502][T11510] RSP: 002b:00007ff3e25661a8 EFLAGS: 00000246 ORIG_RAX: 000000000000002f
+[   97.289400][T11510] RAX: ffffffffffffffda RBX: 000000000000000a RCX: 000000000044d4ed
+[   97.290246][T11510] RDX: 0000000040010083 RSI: 0000000020000140 RDI: 0000000000000004
+[   97.291080][T11510] RBP: 00000000004e4388 R08: 00007ff3e2566640 R09: 00007ff3e2566640
+[   97.291911][T11510] R10: 0000000000000000 R11: 0000000000000246 R12: 00000000004e4380
+[   97.292763][T11510] R13: 00000000004e438c R14: 00000000004155d0 R15: 00007ff3e2546000
+[   97.293602][T11510]  </TASK>
+[   97.293922][T11510]
+[   97.294169][T11510] Allocated by task 11509:
+[   97.294629][T11510]  kasan_set_track+0x4c/0x70
+[   97.295115][T11510]  __kasan_slab_alloc+0x65/0x70
+[   97.295625][T11510]  kmem_cache_alloc_node+0x1ca/0x340
+[   97.296191][T11510]  __alloc_skb+0xce/0x2b0
+[   97.296662][T11510]  alloc_skb_with_frags+0xa5/0x750
+[   97.297199][T11510]  sock_alloc_send_pskb+0x909/0xa40
+[   97.297741][T11510]  queue_oob+0xe8/0x580
+[   97.298183][T11510]  unix_stream_sendmsg+0xe2a/0x10a0
+[   97.298727][T11510]  ____sys_sendmsg+0x5d5/0x9c0
+[   97.299227][T11510]  __sys_sendmsg+0x2b0/0x390
+[   97.299711][T11510]  do_syscall_64+0x3d/0x90
+[   97.300181][T11510]  entry_SYSCALL_64_after_hwframe+0x63/0xcd
+[   97.300826][T11510]
+[   97.301069][T11510] Freed by task 11509:
+[   97.301494][T11510]  kasan_set_track+0x4c/0x70
+[   97.301979][T11510]  kasan_save_free_info+0x27/0x40
+[   97.302523][T11510]  ____kasan_slab_free+0xd6/0x120
+[   97.303059][T11510]  slab_free_freelist_hook+0x12c/0x1a0
+[   97.303638][T11510]  kmem_cache_free+0x94/0x1d0
+[   97.304138][T11510]  queue_oob+0x32e/0x580
+[   97.304600][T11510]  unix_stream_sendmsg+0xe2a/0x10a0
+[   97.305147][T11510]  ____sys_sendmsg+0x5d5/0x9c0
+[   97.305656][T11510]  __sys_sendmsg+0x2b0/0x390
+[   97.306149][T11510]  do_syscall_64+0x3d/0x90
+[   97.306624][T11510]  entry_SYSCALL_64_after_hwframe+0x63/0xcd
+[   97.307252][T11510]
+[   97.307498][T11510] The buggy address belongs to the object at ffff888026664a00
+[   97.307498][T11510]  which belongs to the cache skbuff_head_cache of size 240
+[   97.309051][T11510] The buggy address is located 68 bytes inside of
+[   97.309051][T11510]  240-byte region [ffff888026664a00, ffff888026664af0)
