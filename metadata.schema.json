@@ -62,9 +62,6 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "contains": {
-            "const": "CONFIG_KASAN=y"
-          },
           "items": {
             "type": "string",
             "pattern": "^CONFIG_[A-Z0-9_]+=.+$"

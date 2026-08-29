@@ -6,7 +6,7 @@ A race in epoll file-lifetime handling can call a poll callback after the watche
 
 ## Target
 
-Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_KASAN=y`, `CONFIG_EPOLL=y`, `CONFIG_DMA_SHARED_BUFFER=y`, and `CONFIG_UDMABUF=y`.
+Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_EPOLL=y`, `CONFIG_DMA_SHARED_BUFFER=y`, and `CONFIG_UDMABUF=y`.
 
 ## Prerequisites
 

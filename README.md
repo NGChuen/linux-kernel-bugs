@@ -8,7 +8,7 @@ fault: task documentation contains bug and reproduction details only.
 
 - Git commit: `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` (`v6.1`)
 - Architecture: x86-64
-- Required instrumentation: `CONFIG_KASAN=y`
+- Expected failure reporter: KASAN
 - Reference VM: 4 vCPUs and 2 GiB by default
 - Guest account: UID/GID 1000 with no initial-namespace capabilities unless a
   task explicitly documents a different requirement

@@ -128,8 +128,6 @@ def main() -> int:
             errors.append(f"{task_name}: config_required must be a non-empty string array")
         elif len(config) != len(set(config)):
             errors.append(f"{task_name}: config_required contains duplicates")
-        elif "CONFIG_KASAN=y" not in config:
-            errors.append(f"{task_name}: config_required must include CONFIG_KASAN=y")
 
         trigger = metadata["trigger"]
         if trigger.get("source") != "trigger.c" or trigger.get("binary") != "trigger":

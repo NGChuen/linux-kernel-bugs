@@ -6,7 +6,7 @@ A race in AF_UNIX urgent-data receive lets a `MSG_OOB | MSG_PEEK` reader use an 
 
 ## Target
 
-Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_KASAN=y`, `CONFIG_UNIX=y`, and `CONFIG_AF_UNIX_OOB=y`.
+Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_UNIX=y` and `CONFIG_AF_UNIX_OOB=y`.
 
 ## Prerequisites
 
