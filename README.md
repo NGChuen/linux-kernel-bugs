@@ -10,8 +10,8 @@ fault: task documentation contains bug and reproduction details only.
 - Architecture: x86-64
 - Expected failure reporter: KASAN
 - Reference VM: 4 vCPUs and 2 GiB by default
-- Guest account: UID/GID 1000 with no initial-namespace capabilities unless a
-  task explicitly documents a different requirement
+- Guest account: non-root with no initial-namespace capabilities unless a task
+  explicitly documents a different requirement
 
 All included tasks have an observable failure on this exact build. A task that
 does not apply to this commit or lacks repeatable runtime evidence does not
@@ -66,8 +66,8 @@ during its first build. Its `clean` target preserves that cache, while
 
 Build commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` with the required
 configuration, boot it in a disposable x86-64 guest, and capture its serial
-console. Build the task's `pov/pov`, copy it into the guest, and run it as the
-ordinary UID-1000 account. Use the timeout and invocation documented in the
+console. Build the task's `pov/pov`, copy it into the guest, and run it as an
+ordinary unprivileged account. Use the timeout and invocation documented in the
 task README. A positive result must match the expected result described there
 and captured in `pov/sanitizer_trace.txt`; merely reaching a source path or
 completing a race loop is not sufficient. The VM and file-transfer
