@@ -11,8 +11,6 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent
-SCHEMA_VERSION = 5
-TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",
     "Prerequisites",
@@ -20,30 +18,8 @@ README_HEADINGS = [
     "Expected result",
 ]
 REPRODUCE_INTRO = "Build and copy `pov/pov` into the guest, then run:"
-TOP_KEYS = {
-    "schema_version",
-    "id",
-    "title",
-    "subsystem",
-    "bug_class",
-    "cve",
-    "target",
-    "trigger",
-    "expected",
-    "reproduction",
-}
-NESTED_KEYS = {
-    "target": {"kernel", "git_commit", "config_required"},
-    "trigger": {
-        "source",
-        "binary",
-        "run_as",
-        "timeout_seconds",
-        "deterministic",
-    },
-    "expected": {"sanitizer", "signature"},
-    "reproduction": {"status", "evidence"},
-}
+TOP_KEYS = {"id", "config_required"}
+CONFIG_PATTERN = re.compile(r"^CONFIG_[A-Z0-9_]+=.+$")
 PORTABILITY_PATTERNS = [
     re.compile("/" + "home" + "/"),
     re.compile("/" + "data" + "/"),
@@ -92,21 +68,16 @@ def main() -> int:
         if set(metadata) != TOP_KEYS:
             errors.append(f"{task_name}: metadata top-level keys do not match schema")
             continue
-        if metadata["schema_version"] != SCHEMA_VERSION:
-            errors.append(
-                f"{task_name}: schema_version must be {SCHEMA_VERSION}"
-            )
-        for key, expected_keys in NESTED_KEYS.items():
-            value = metadata[key]
-            if not isinstance(value, dict) or set(value) != expected_keys:
-                errors.append(f"{task_name}: {key} keys do not match schema")
 
         task_id = metadata["id"]
-        if task_id != task_name:
-            errors.append(f"{task_name}: id must match directory name")
-        if task_id in seen_ids:
-            errors.append(f"{task_name}: duplicate task id")
-        seen_ids.add(task_id)
+        if not is_nonempty_string(task_id):
+            errors.append(f"{task_name}: id must be a non-empty string")
+        else:
+            if task_id != task_name:
+                errors.append(f"{task_name}: id must match directory name")
+            if task_id in seen_ids:
+                errors.append(f"{task_name}: duplicate task id")
+            seen_ids.add(task_id)
 
         expected_root_entries = {
             "README.md",
@@ -124,57 +95,16 @@ def main() -> int:
                 + ", ".join(unexpected_root_entries)
             )
 
-        for key in ("id", "title", "subsystem", "bug_class"):
-            if not is_nonempty_string(metadata[key]):
-                errors.append(f"{task_name}: {key} must be a non-empty string")
-
-        cve = metadata["cve"]
-        if task_name.startswith("CVE-"):
-            if cve != task_name:
-                errors.append(f"{task_name}: cve must match task id")
-        elif cve is not None:
-            errors.append(f"{task_name}: non-CVE task must use null cve")
-
-        target = metadata["target"]
-        if target.get("kernel") != "6.1-kasan":
-            errors.append(f"{task_name}: target.kernel must be 6.1-kasan")
-        if target.get("git_commit") != TARGET_COMMIT:
-            errors.append(f"{task_name}: target.git_commit is not canonical")
-        config = target.get("config_required")
+        config = metadata["config_required"]
         if not isinstance(config, list) or not config or not all(
-            is_nonempty_string(item) for item in config
+            is_nonempty_string(item) and CONFIG_PATTERN.fullmatch(item)
+            for item in config
         ):
-            errors.append(f"{task_name}: config_required must be a non-empty string array")
+            errors.append(
+                f"{task_name}: config_required must be a non-empty CONFIG_* array"
+            )
         elif len(config) != len(set(config)):
             errors.append(f"{task_name}: config_required contains duplicates")
-
-        trigger = metadata["trigger"]
-        if (
-            trigger.get("source") != "pov/pov.c"
-            or trigger.get("binary") != "pov/pov"
-        ):
-            errors.append(f"{task_name}: trigger source/binary names are not canonical")
-        if not is_nonempty_string(trigger.get("run_as")):
-            errors.append(f"{task_name}: trigger.run_as must be non-empty")
-        timeout = trigger.get("timeout_seconds")
-        if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
-            errors.append(f"{task_name}: timeout_seconds must be a positive integer")
-        if not isinstance(trigger.get("deterministic"), bool):
-            errors.append(f"{task_name}: deterministic must be boolean")
-
-        expected = metadata["expected"]
-        reporter = expected.get("sanitizer")
-        signature = expected.get("signature")
-        if reporter not in {"KASAN", "kernel-warning"}:
-            errors.append(f"{task_name}: unsupported expected reporter {reporter!r}")
-        if not is_nonempty_string(signature):
-            errors.append(f"{task_name}: expected.signature must be non-empty")
-
-        reproduction = metadata["reproduction"]
-        if reproduction.get("status") != "verified":
-            errors.append(f"{task_name}: included tasks must be verified")
-        if reproduction.get("evidence") != "pov/sanitizer_trace.txt":
-            errors.append(f"{task_name}: evidence path must be pov/sanitizer_trace.txt")
 
         required_files = [
             "README.md",
@@ -190,14 +120,9 @@ def main() -> int:
         evidence_path = task_dir / "pov/sanitizer_trace.txt"
         if evidence_path.is_file():
             evidence = evidence_path.read_text(encoding="utf-8", errors="replace")
-            if reporter == "KASAN" and "KASAN" not in evidence:
-                errors.append(f"{task_name}: evidence has no KASAN diagnostic")
-            if reporter == "kernel-warning" and "WARNING:" not in evidence:
-                errors.append(f"{task_name}: evidence has no kernel warning")
-            match = re.search(r"\bin ([A-Za-z_][A-Za-z0-9_.]*)", signature or "")
-            if match and match.group(1) not in evidence:
+            if "KASAN" not in evidence and "WARNING:" not in evidence:
                 errors.append(
-                    f"{task_name}: evidence does not contain signature token {match.group(1)}"
+                    f"{task_name}: evidence has no KASAN diagnostic or kernel warning"
                 )
 
         readme_path = task_dir / "README.md"

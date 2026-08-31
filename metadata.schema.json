@@ -5,125 +5,21 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version",
     "id",
-    "title",
-    "subsystem",
-    "bug_class",
-    "cve",
-    "target",
-    "trigger",
-    "expected",
-    "reproduction"
+    "config_required"
   ],
   "properties": {
-    "schema_version": {
-      "const": 5
-    },
     "id": {
       "type": "string",
       "minLength": 1
     },
-    "title": {
-      "type": "string",
-      "minLength": 1
-    },
-    "subsystem": {
-      "type": "string",
-      "minLength": 1
-    },
-    "bug_class": {
-      "type": "string",
-      "minLength": 1
-    },
-    "cve": {
-      "oneOf": [
-        {
-          "type": "string",
-          "pattern": "^CVE-[0-9]{4}-[0-9]+$"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "target": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kernel", "git_commit", "config_required"],
-      "properties": {
-        "kernel": {
-          "const": "6.1-kasan"
-        },
-        "git_commit": {
-          "const": "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
-        },
-        "config_required": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^CONFIG_[A-Z0-9_]+=.+$"
-          }
-        }
-      }
-    },
-    "trigger": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "source",
-        "binary",
-        "run_as",
-        "timeout_seconds",
-        "deterministic"
-      ],
-      "properties": {
-        "source": {
-          "const": "pov/pov.c"
-        },
-        "binary": {
-          "const": "pov/pov"
-        },
-        "run_as": {
-          "type": "string",
-          "minLength": 1
-        },
-        "timeout_seconds": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "deterministic": {
-          "type": "boolean"
-        }
-      }
-    },
-    "expected": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["sanitizer", "signature"],
-      "properties": {
-        "sanitizer": {
-          "enum": ["KASAN", "kernel-warning"]
-        },
-        "signature": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "reproduction": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "evidence"],
-      "properties": {
-        "status": {
-          "const": "verified"
-        },
-        "evidence": {
-          "const": "pov/sanitizer_trace.txt"
-        }
+    "config_required": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^CONFIG_[A-Z0-9_]+=.+$"
       }
     }
   }

@@ -24,7 +24,7 @@ Every task directory contains:
 | Path | Purpose |
 | --- | --- |
 | `README.md` | Bug summary, prerequisites, exact reproduction, and expected result |
-| `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
+| `metadata.json` | Machine-readable identity and required kernel configuration |
 | `pov/sanitizer_trace.txt` | Concise raw sanitizer evidence captured from the canonical target |
 | `pov/pov.c` | Minimal userspace reproducer |
 | `pov/Makefile` | Independent, override-friendly static build |
@@ -32,11 +32,10 @@ Every task directory contains:
 Any supporting reproducer sources also live under `pov/`; task roots contain
 only documentation, metadata, and that directory.
 
-`metadata.schema.json` defines metadata schema version 5, which makes the
-task-local `pov/` source and binary paths explicit. `validate.py` additionally
-checks repository invariants that JSON Schema cannot express, such as directory
-identity, README section order, evidence/signature agreement, and absence of
-checked-in build products.
+`metadata.schema.json` defines the minimal portable metadata contract:
+`id` and `config_required`. `validate.py` additionally checks repository
+invariants that JSON Schema cannot express, such as directory identity, README
+section order, sanitizer evidence, and absence of checked-in build products.
 
 ## Validate a checkout
 
@@ -47,8 +46,8 @@ python3 validate.py
 ```
 
 The validator checks the portable metadata schema and repository invariants
-such as directory identity, README section order, evidence/signature agreement,
-the canonical `pov/` layout, and absence of checked-in build products.
+such as directory identity, README section order, sanitizer evidence, the
+canonical `pov/` layout, and absence of checked-in build products.
 
 ## Build one case
 
@@ -69,10 +68,10 @@ Build commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` with the required
 configuration, boot it in a disposable x86-64 guest, and capture its serial
 console. Build the task's `pov/pov`, copy it into the guest, and run it as the
 ordinary UID-1000 account. Use the timeout and invocation documented in the
-task README and `metadata.json`. A positive result must match the declared
-signature in `pov/sanitizer_trace.txt`; merely reaching a source path or completing
-a race loop is not sufficient. The VM and file-transfer implementation are
-deliberately left to the benchmark harness.
+task README. A positive result must match the expected result described there
+and captured in `pov/sanitizer_trace.txt`; merely reaching a source path or
+completing a race loop is not sufficient. The VM and file-transfer
+implementation are deliberately left to the benchmark harness.
 
 ## Benchmark acceptance policy
 
