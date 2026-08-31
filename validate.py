@@ -18,7 +18,6 @@ README_HEADINGS = [
     "Build",
     "Reproduce",
     "Expected result",
-    "Verified result",
 ]
 TOP_KEYS = {
     "schema_version",

@@ -23,7 +23,7 @@ Every task directory contains:
 
 | File | Purpose |
 | --- | --- |
-| `README.md` | Bug summary, prerequisites, exact reproduction, and verified result |
+| `README.md` | Bug summary, prerequisites, exact reproduction, and expected result |
 | `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
 | `trigger.c` | Minimal userspace reproducer |
 | `Makefile` | Override-friendly static build with `all` and `clean` targets |

@@ -10,8 +10,7 @@ The kernel needs `CONFIG_EPOLL=y`, `CONFIG_DMA_SHARED_BUFFER=y`, and
 `CONFIG_UDMABUF=y`. The `/dev/udmabuf` device node must exist and be readable
 and writable by the invoking user; an administrator may need to adjust its
 mode before the run. The trigger itself runs in the initial user namespace as
-an ordinary user and needs no capability. The verified run used uid 1000 with
-all capability sets empty.
+an unprivileged user with no capabilities.
 
 ## Build
 
@@ -39,7 +38,3 @@ KASAN diagnoses a low-address dereference during final file teardown. On this bu
 KASAN: null-ptr-deref in range [0x0000000000000028-0x000000000000002f]
 RIP: 0010:__fput+0x188/0x880
 ```
-
-## Verified result
-
-Verified on a clean target VM as uid 1000 with no capabilities. The trigger produced the expected KASAN null-pointer finding at `__fput+0x188/0x880` and a fatal kernel panic; the fresh raw serial excerpt is in `runtime-console.txt`.

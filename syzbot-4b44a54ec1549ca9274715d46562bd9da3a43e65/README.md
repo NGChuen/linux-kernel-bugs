@@ -7,9 +7,8 @@ A race in AF_UNIX urgent-data receive lets a `MSG_OOB | MSG_PEEK` reader use an 
 ## Prerequisites
 
 The kernel needs `CONFIG_UNIX=y` and `CONFIG_AF_UNIX_OOB=y`. Run in the
-initial user namespace as an ordinary user; no capability is required. The
-verified run used uid 1000 with all capability sets empty. Multiple CPUs
-improve race coverage.
+initial user namespace as an unprivileged user with no capabilities. Multiple
+CPUs improve race coverage.
 
 ## Build
 
@@ -38,7 +37,3 @@ BUG: KASAN: use-after-free in unix_stream_read_actor+0x9d/0xa0
 ```
 
 Allocation and free stacks both pass through `queue_oob`.
-
-## Verified result
-
-Verified on the target kernel as uid 1000 with no capabilities. KASAN reported the expected `unix_stream_read_actor+0x9d/0xa0` use-after-free; the fresh raw serial excerpt is in `runtime-console.txt`.
