@@ -14,10 +14,10 @@ an unprivileged user with no capabilities.
 
 ## Reproduce
 
-Build and copy `pov/trigger` into the guest, then run:
+Build and copy `pov/pov` into the guest, then run:
 
 ```sh
-timeout -s KILL 180s ./trigger
+timeout -s KILL 180s ./pov
 ```
 
 The trigger repeatedly races epoll scanning with file teardown. It is timing-dependent; a failure normally occurs quickly, but a clean-VM retry may be required before the timeout.

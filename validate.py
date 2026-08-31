@@ -11,7 +11,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",
@@ -19,7 +19,7 @@ README_HEADINGS = [
     "Reproduce",
     "Expected result",
 ]
-REPRODUCE_INTRO = "Build and copy `pov/trigger` into the guest, then run:"
+REPRODUCE_INTRO = "Build and copy `pov/pov` into the guest, then run:"
 TOP_KEYS = {
     "schema_version",
     "id",
@@ -151,8 +151,8 @@ def main() -> int:
 
         trigger = metadata["trigger"]
         if (
-            trigger.get("source") != "pov/trigger.c"
-            or trigger.get("binary") != "pov/trigger"
+            trigger.get("source") != "pov/pov.c"
+            or trigger.get("binary") != "pov/pov"
         ):
             errors.append(f"{task_name}: trigger source/binary names are not canonical")
         if not is_nonempty_string(trigger.get("run_as")):
@@ -181,7 +181,7 @@ def main() -> int:
             "README.md",
             "runtime-console.txt",
             "pov/Makefile",
-            "pov/trigger.c",
+            "pov/pov.c",
         ]
         for filename in required_files:
             path = task_dir / filename
@@ -213,12 +213,19 @@ def main() -> int:
         makefile_path = task_dir / "pov" / "Makefile"
         if makefile_path.is_file():
             makefile = makefile_path.read_text(encoding="utf-8", errors="replace")
-            for fragment in ("TARGET := trigger", "CC ?=", "CPPFLAGS ?=", "CFLAGS ?=", "LDFLAGS ?="):
+            for fragment in (
+                "TARGET := pov",
+                "$(TARGET): pov.c",
+                "CC ?=",
+                "CPPFLAGS ?=",
+                "CFLAGS ?=",
+                "LDFLAGS ?=",
+            ):
                 if fragment not in makefile:
                     errors.append(f"{task_name}: pov/Makefile missing {fragment!r}")
 
-        if (task_dir / "pov" / "trigger").exists():
-            errors.append(f"{task_name}: checked-in build product pov/trigger is present")
+        if (task_dir / "pov" / "pov").exists():
+            errors.append(f"{task_name}: checked-in build product pov/pov is present")
         for forbidden in ("exploit.md", "gdb-verify.cmd", "runtime-gdb.txt"):
             for parent in (task_dir, task_dir / "pov"):
                 if (parent / forbidden).exists():

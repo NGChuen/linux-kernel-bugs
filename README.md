@@ -26,13 +26,13 @@ Every task directory contains:
 | `README.md` | Bug summary, prerequisites, exact reproduction, and expected result |
 | `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
 | `runtime-console.txt` | Concise raw evidence captured from the canonical target |
-| `pov/trigger.c` | Minimal userspace reproducer |
+| `pov/pov.c` | Minimal userspace reproducer |
 | `pov/Makefile` | Independent, override-friendly static build |
 
 Any supporting reproducer sources also live under `pov/`; task roots contain
 only documentation, metadata, runtime evidence, and that directory.
 
-`metadata.schema.json` defines metadata schema version 2, which makes the
+`metadata.schema.json` defines metadata schema version 3, which makes the
 task-local `pov/` source and binary paths explicit. `validate.py` additionally
 checks repository invariants that JSON Schema cannot express, such as directory
 identity, README section order, evidence/signature agreement, and absence of
@@ -67,7 +67,7 @@ during its first build. Its `clean` target preserves that cache, while
 
 Build commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` with the required
 configuration, boot it in a disposable x86-64 guest, and capture its serial
-console. Build the task's `pov/trigger`, copy it into the guest, and run it as the
+console. Build the task's `pov/pov`, copy it into the guest, and run it as the
 ordinary UID-1000 account. Use the timeout and invocation documented in the
 task README and `metadata.json`. A positive result must match the declared
 signature in `runtime-console.txt`; merely reaching a source path or completing

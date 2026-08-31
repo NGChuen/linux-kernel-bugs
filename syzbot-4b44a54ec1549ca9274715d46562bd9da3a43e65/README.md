@@ -12,10 +12,10 @@ CPUs improve race coverage.
 
 ## Reproduce
 
-Build and copy `pov/trigger` into the guest, then run:
+Build and copy `pov/pov` into the guest, then run:
 
 ```sh
-timeout -s KILL 180s ./trigger
+timeout -s KILL 180s ./pov
 ```
 
 The trigger continuously races AF_UNIX urgent sends against peek receives. It is timing-dependent and may need the full timeout or another clean-VM run.

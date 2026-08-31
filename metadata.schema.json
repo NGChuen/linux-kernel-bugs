@@ -18,7 +18,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 3
     },
     "id": {
       "type": "string",
@@ -81,10 +81,10 @@
       ],
       "properties": {
         "source": {
-          "const": "pov/trigger.c"
+          "const": "pov/pov.c"
         },
         "binary": {
-          "const": "pov/trigger"
+          "const": "pov/pov"
         },
         "run_as": {
           "type": "string",
