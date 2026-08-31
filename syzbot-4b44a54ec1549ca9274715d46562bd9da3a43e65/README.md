@@ -4,13 +4,12 @@
 
 A race in AF_UNIX urgent-data receive lets a `MSG_OOB | MSG_PEEK` reader use an skb after a concurrent urgent send replaces and frees it.
 
-## Target
-
-Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_UNIX=y` and `CONFIG_AF_UNIX_OOB=y`.
-
 ## Prerequisites
 
-Run in the initial user namespace as an ordinary user; no capability is required. The verified run used uid 1000 with all capability sets empty. Multiple CPUs improve race coverage.
+The kernel needs `CONFIG_UNIX=y` and `CONFIG_AF_UNIX_OOB=y`. Run in the
+initial user namespace as an ordinary user; no capability is required. The
+verified run used uid 1000 with all capability sets empty. Multiple CPUs
+improve race coverage.
 
 ## Build
 

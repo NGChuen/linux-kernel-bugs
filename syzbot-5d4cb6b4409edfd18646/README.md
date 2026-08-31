@@ -4,13 +4,14 @@
 
 A race in epoll file-lifetime handling can call a poll callback after the watched file reaches final teardown. The trigger uses a dma-buf from `/dev/udmabuf` to reach the faulty lifetime transition.
 
-## Target
-
-Linux 6.1 at commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476`. Required configuration: `CONFIG_EPOLL=y`, `CONFIG_DMA_SHARED_BUFFER=y`, and `CONFIG_UDMABUF=y`.
-
 ## Prerequisites
 
-The `/dev/udmabuf` device node must exist and be readable and writable by the invoking user; an administrator may need to adjust its mode before the run. The trigger itself runs in the initial user namespace as an ordinary user and needs no capability. The verified run used uid 1000 with all capability sets empty.
+The kernel needs `CONFIG_EPOLL=y`, `CONFIG_DMA_SHARED_BUFFER=y`, and
+`CONFIG_UDMABUF=y`. The `/dev/udmabuf` device node must exist and be readable
+and writable by the invoking user; an administrator may need to adjust its
+mode before the run. The trigger itself runs in the initial user namespace as
+an ordinary user and needs no capability. The verified run used uid 1000 with
+all capability sets empty.
 
 ## Build
 
