@@ -11,7 +11,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",
@@ -111,7 +111,6 @@ def main() -> int:
         expected_root_entries = {
             "README.md",
             "metadata.json",
-            "sanitizer_trace.txt",
             "pov",
         }
         unexpected_root_entries = sorted(
@@ -174,12 +173,12 @@ def main() -> int:
         reproduction = metadata["reproduction"]
         if reproduction.get("status") != "verified":
             errors.append(f"{task_name}: included tasks must be verified")
-        if reproduction.get("evidence") != "sanitizer_trace.txt":
-            errors.append(f"{task_name}: evidence path must be sanitizer_trace.txt")
+        if reproduction.get("evidence") != "pov/sanitizer_trace.txt":
+            errors.append(f"{task_name}: evidence path must be pov/sanitizer_trace.txt")
 
         required_files = [
             "README.md",
-            "sanitizer_trace.txt",
+            "pov/sanitizer_trace.txt",
             "pov/Makefile",
             "pov/pov.c",
         ]
@@ -188,7 +187,7 @@ def main() -> int:
             if not path.is_file() or path.stat().st_size == 0:
                 errors.append(f"{task_name}: missing or empty {filename}")
 
-        evidence_path = task_dir / "sanitizer_trace.txt"
+        evidence_path = task_dir / "pov/sanitizer_trace.txt"
         if evidence_path.is_file():
             evidence = evidence_path.read_text(encoding="utf-8", errors="replace")
             if reporter == "KASAN" and "KASAN" not in evidence:

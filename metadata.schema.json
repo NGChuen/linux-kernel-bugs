@@ -18,7 +18,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 4
+      "const": 5
     },
     "id": {
       "type": "string",
@@ -122,7 +122,7 @@
           "const": "verified"
         },
         "evidence": {
-          "const": "sanitizer_trace.txt"
+          "const": "pov/sanitizer_trace.txt"
         }
       }
     }

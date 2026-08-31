@@ -25,14 +25,14 @@ Every task directory contains:
 | --- | --- |
 | `README.md` | Bug summary, prerequisites, exact reproduction, and expected result |
 | `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
-| `sanitizer_trace.txt` | Concise raw sanitizer evidence captured from the canonical target |
+| `pov/sanitizer_trace.txt` | Concise raw sanitizer evidence captured from the canonical target |
 | `pov/pov.c` | Minimal userspace reproducer |
 | `pov/Makefile` | Independent, override-friendly static build |
 
 Any supporting reproducer sources also live under `pov/`; task roots contain
-only documentation, metadata, runtime evidence, and that directory.
+only documentation, metadata, and that directory.
 
-`metadata.schema.json` defines metadata schema version 4, which makes the
+`metadata.schema.json` defines metadata schema version 5, which makes the
 task-local `pov/` source and binary paths explicit. `validate.py` additionally
 checks repository invariants that JSON Schema cannot express, such as directory
 identity, README section order, evidence/signature agreement, and absence of
@@ -70,7 +70,7 @@ configuration, boot it in a disposable x86-64 guest, and capture its serial
 console. Build the task's `pov/pov`, copy it into the guest, and run it as the
 ordinary UID-1000 account. Use the timeout and invocation documented in the
 task README and `metadata.json`. A positive result must match the declared
-signature in `sanitizer_trace.txt`; merely reaching a source path or completing
+signature in `pov/sanitizer_trace.txt`; merely reaching a source path or completing
 a race loop is not sufficient. The VM and file-transfer implementation are
 deliberately left to the benchmark harness.
 

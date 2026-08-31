@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "id": "syzbot-5d4cb6b4409edfd18646",
   "title": "epoll file-lifetime race during dma-buf teardown",
   "subsystem": "fs/epoll",
@@ -27,6 +27,6 @@
   },
   "reproduction": {
     "status": "verified",
-    "evidence": "sanitizer_trace.txt"
+    "evidence": "pov/sanitizer_trace.txt"
   }
 }
