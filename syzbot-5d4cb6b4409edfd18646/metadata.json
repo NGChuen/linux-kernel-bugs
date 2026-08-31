@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "syzbot-5d4cb6b4409edfd18646",
   "title": "epoll file-lifetime race during dma-buf teardown",
   "subsystem": "fs/epoll",
@@ -15,8 +15,8 @@
     ]
   },
   "trigger": {
-    "source": "trigger.c",
-    "binary": "trigger",
+    "source": "pov/trigger.c",
+    "binary": "pov/trigger",
     "run_as": "uid 1000 in the initial user namespace with no capabilities; /dev/udmabuf must be accessible",
     "timeout_seconds": 180,
     "deterministic": false

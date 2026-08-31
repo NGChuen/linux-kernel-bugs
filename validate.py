@@ -11,6 +11,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent
+SCHEMA_VERSION = 2
 TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",
@@ -91,6 +92,10 @@ def main() -> int:
         if set(metadata) != TOP_KEYS:
             errors.append(f"{task_name}: metadata top-level keys do not match schema")
             continue
+        if metadata["schema_version"] != SCHEMA_VERSION:
+            errors.append(
+                f"{task_name}: schema_version must be {SCHEMA_VERSION}"
+            )
         for key, expected_keys in NESTED_KEYS.items():
             value = metadata[key]
             if not isinstance(value, dict) or set(value) != expected_keys:
@@ -102,6 +107,23 @@ def main() -> int:
         if task_id in seen_ids:
             errors.append(f"{task_name}: duplicate task id")
         seen_ids.add(task_id)
+
+        expected_root_entries = {
+            "README.md",
+            "metadata.json",
+            "runtime-console.txt",
+            "pov",
+        }
+        unexpected_root_entries = sorted(
+            path.name
+            for path in task_dir.iterdir()
+            if path.name not in expected_root_entries
+        )
+        if unexpected_root_entries:
+            errors.append(
+                f"{task_name}: unexpected task-root entries: "
+                + ", ".join(unexpected_root_entries)
+            )
 
         for key in ("id", "title", "subsystem", "bug_class"):
             if not is_nonempty_string(metadata[key]):
@@ -128,7 +150,10 @@ def main() -> int:
             errors.append(f"{task_name}: config_required contains duplicates")
 
         trigger = metadata["trigger"]
-        if trigger.get("source") != "trigger.c" or trigger.get("binary") != "trigger":
+        if (
+            trigger.get("source") != "pov/trigger.c"
+            or trigger.get("binary") != "pov/trigger"
+        ):
             errors.append(f"{task_name}: trigger source/binary names are not canonical")
         if not is_nonempty_string(trigger.get("run_as")):
             errors.append(f"{task_name}: trigger.run_as must be non-empty")
@@ -152,7 +177,12 @@ def main() -> int:
         if reproduction.get("evidence") != "runtime-console.txt":
             errors.append(f"{task_name}: evidence path must be runtime-console.txt")
 
-        required_files = ["README.md", "Makefile", "trigger.c", "runtime-console.txt"]
+        required_files = [
+            "README.md",
+            "runtime-console.txt",
+            "pov/Makefile",
+            "pov/trigger.c",
+        ]
         for filename in required_files:
             path = task_dir / filename
             if not path.is_file() or path.stat().st_size == 0:
@@ -178,18 +208,22 @@ def main() -> int:
             if headings != README_HEADINGS:
                 errors.append(f"{task_name}: README section order is not canonical")
 
-        makefile_path = task_dir / "Makefile"
+        makefile_path = task_dir / "pov" / "Makefile"
         if makefile_path.is_file():
             makefile = makefile_path.read_text(encoding="utf-8", errors="replace")
             for fragment in ("TARGET := trigger", "CC ?=", "CPPFLAGS ?=", "CFLAGS ?=", "LDFLAGS ?="):
                 if fragment not in makefile:
-                    errors.append(f"{task_name}: Makefile missing {fragment!r}")
+                    errors.append(f"{task_name}: pov/Makefile missing {fragment!r}")
 
-        if (task_dir / "trigger").exists():
-            errors.append(f"{task_name}: checked-in build product trigger is present")
+        if (task_dir / "pov" / "trigger").exists():
+            errors.append(f"{task_name}: checked-in build product pov/trigger is present")
         for forbidden in ("exploit.md", "gdb-verify.cmd", "runtime-gdb.txt"):
-            if (task_dir / forbidden).exists():
-                errors.append(f"{task_name}: forbidden artifact {forbidden} is present")
+            for parent in (task_dir, task_dir / "pov"):
+                if (parent / forbidden).exists():
+                    relative = (parent / forbidden).relative_to(task_dir)
+                    errors.append(
+                        f"{task_name}: forbidden artifact {relative} is present"
+                    )
 
     if errors:
         for error in errors:

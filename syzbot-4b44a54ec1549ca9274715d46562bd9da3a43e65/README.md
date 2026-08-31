@@ -13,14 +13,14 @@ CPUs improve race coverage.
 ## Build
 
 ```sh
-make
+make -C pov
 ```
 
 The default build is static and enables compiler warnings.
 
 ## Reproduce
 
-Copy `trigger` into the guest and run:
+Copy `pov/trigger` into the guest and run:
 
 ```sh
 timeout -s KILL 180s ./trigger

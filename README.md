@@ -21,45 +21,52 @@ belong in the benchmark.
 
 Every task directory contains:
 
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
 | `README.md` | Bug summary, prerequisites, exact reproduction, and expected result |
 | `metadata.json` | Machine-readable identity, target, timeout, and expected signature |
-| `trigger.c` | Minimal userspace reproducer |
-| `Makefile` | Override-friendly static build with `all` and `clean` targets |
 | `runtime-console.txt` | Concise raw evidence captured from the canonical target |
+| `pov/trigger.c` | Minimal userspace reproducer |
+| `pov/Makefile` | Independent, override-friendly static build |
 
-`metadata.schema.json` is the portable schema. `validate.py` additionally
+Any supporting reproducer sources also live under `pov/`; task roots contain
+only documentation, metadata, runtime evidence, and that directory.
+
+`metadata.schema.json` defines metadata schema version 2, which makes the
+task-local `pov/` source and binary paths explicit. `validate.py` additionally
 checks repository invariants that JSON Schema cannot express, such as directory
 identity, README section order, evidence/signature agreement, and absence of
 checked-in build products.
 
-## Validate and build
+## Validate a checkout
 
 From the repository root:
 
 ```sh
-make validate
-make build
-make clean
-make distclean
+python3 validate.py
 ```
 
-`CVE-2024-1086` downloads pinned, checksum-verified static dependencies during
-its first build. `make clean` preserves that cache; `make distclean` removes it.
-Other tasks build directly from their checked-in sources.
+The validator checks the portable metadata schema and repository invariants
+such as directory identity, README section order, evidence/signature agreement,
+the canonical `pov/` layout, and absence of checked-in build products.
 
-To build one case:
+## Build one case
+
+Each task is independent. Build its PoV directly:
 
 ```sh
-make -C CVE-2023-3776 clean all
+make -C CVE-2023-3776/pov clean all
 ```
+
+`CVE-2024-1086/pov` downloads pinned, checksum-verified static dependencies
+during its first build. Its `clean` target preserves that cache, while
+`distclean` removes it.
 
 ## Reproduce a case
 
 Build commit `830b3c68c1fb1e9176028d02ef86f3cf76aa2476` with the required
 configuration, boot it in a disposable x86-64 guest, and capture its serial
-console. Copy the statically linked trigger into the guest and run it as the
+console. Build the task's `pov/trigger`, copy it into the guest, and run it as the
 ordinary UID-1000 account. Use the timeout and invocation documented in the
 task README and `metadata.json`. A positive result must match the declared
 signature in `runtime-console.txt`; merely reaching a source path or completing
@@ -71,7 +78,7 @@ deliberately left to the benchmark harness.
 An included task must satisfy all of the following:
 
 1. The bug is present at the canonical commit and required options are enabled.
-2. The trigger builds from a clean checkout using its checked-in Makefile.
+2. The trigger builds from a clean checkout using its checked-in `pov/Makefile`.
 3. A fresh run on the canonical KASAN guest produces the declared kernel
    diagnostic.
 4. The evidence identifies the buggy subsystem and is not only a secondary or

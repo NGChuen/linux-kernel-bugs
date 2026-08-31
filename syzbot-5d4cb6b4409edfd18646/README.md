@@ -15,14 +15,15 @@ an unprivileged user with no capabilities.
 ## Build
 
 ```sh
-make
+make -C pov
 ```
 
 The default build is static and enables compiler warnings.
 
 ## Reproduce
 
-Copy `trigger` into the guest, make `/dev/udmabuf` accessible as described above, and run:
+Copy `pov/trigger` into the guest, make `/dev/udmabuf` accessible as described
+above, and run:
 
 ```sh
 timeout -s KILL 180s ./trigger

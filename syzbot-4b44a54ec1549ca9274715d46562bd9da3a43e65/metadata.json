@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "syzbot-4b44a54ec1549ca9274715d46562bd9da3a43e65",
   "title": "AF_UNIX urgent-data receive skb use-after-free",
   "subsystem": "net/unix",
@@ -14,8 +14,8 @@
     ]
   },
   "trigger": {
-    "source": "trigger.c",
-    "binary": "trigger",
+    "source": "pov/trigger.c",
+    "binary": "pov/trigger",
     "run_as": "uid 1000 in the initial user namespace with no capabilities",
     "timeout_seconds": 180,
     "deterministic": false
