@@ -16,10 +16,10 @@ TARGET_COMMIT = "830b3c68c1fb1e9176028d02ef86f3cf76aa2476"
 README_HEADINGS = [
     "Summary",
     "Prerequisites",
-    "Build",
     "Reproduce",
     "Expected result",
 ]
+REPRODUCE_INTRO = "Build and copy `pov/trigger` into the guest, then run:"
 TOP_KEYS = {
     "schema_version",
     "id",
@@ -207,6 +207,8 @@ def main() -> int:
             headings = re.findall(r"^## (.+)$", readme, flags=re.MULTILINE)
             if headings != README_HEADINGS:
                 errors.append(f"{task_name}: README section order is not canonical")
+            if f"## Reproduce\n\n{REPRODUCE_INTRO}\n" not in readme:
+                errors.append(f"{task_name}: README reproduction intro is not canonical")
 
         makefile_path = task_dir / "pov" / "Makefile"
         if makefile_path.is_file():

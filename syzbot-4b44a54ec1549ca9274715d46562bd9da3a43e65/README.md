@@ -10,17 +10,9 @@ The kernel needs `CONFIG_UNIX=y` and `CONFIG_AF_UNIX_OOB=y`. Run in the
 initial user namespace as an unprivileged user with no capabilities. Multiple
 CPUs improve race coverage.
 
-## Build
-
-```sh
-make -C pov
-```
-
-The default build is static and enables compiler warnings.
-
 ## Reproduce
 
-Copy `pov/trigger` into the guest and run:
+Build and copy `pov/trigger` into the guest, then run:
 
 ```sh
 timeout -s KILL 180s ./trigger

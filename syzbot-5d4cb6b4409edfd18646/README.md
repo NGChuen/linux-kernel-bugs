@@ -12,18 +12,9 @@ and writable by the invoking user; an administrator may need to adjust its
 mode before the run. The trigger itself runs in the initial user namespace as
 an unprivileged user with no capabilities.
 
-## Build
-
-```sh
-make -C pov
-```
-
-The default build is static and enables compiler warnings.
-
 ## Reproduce
 
-Copy `pov/trigger` into the guest, make `/dev/udmabuf` accessible as described
-above, and run:
+Build and copy `pov/trigger` into the guest, then run:
 
 ```sh
 timeout -s KILL 180s ./trigger

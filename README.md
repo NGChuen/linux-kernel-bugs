@@ -52,10 +52,11 @@ the canonical `pov/` layout, and absence of checked-in build products.
 
 ## Build one case
 
-Each task is independent. Build its PoV directly:
+Each task is independent. From the task directory, build its PoV with the
+standard command:
 
 ```sh
-make -C CVE-2023-3776/pov clean all
+make -C pov clean all
 ```
 
 `CVE-2024-1086/pov` downloads pinned, checksum-verified static dependencies
